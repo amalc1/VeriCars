@@ -2,6 +2,7 @@
 import { CarCardProps } from "@/lib/types";
 import { CarIcon, Heart } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -12,8 +13,9 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
   const handleToggleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
     setIsSaved((prev) => !prev);
   };
+  const router = useRouter();
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition group">
+    <Card className="overflow-hidden hover:shadow-lg transition group py-0">
       <div className="relative h-48">
         {car.images && car.images.length > 0 ? (
           <div className="relative h-full w-full ">
@@ -72,8 +74,17 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
             {car.mileage.toLocaleString()} miles
           </Badge>
           <Badge variant={"outline"} className="bg-gray-50">
-            {car.color} 
+            {car.color}
           </Badge>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <Button
+            className="flex-1"
+            onClick={() => router.push(`/cars/${car.id}`)}
+          >
+            View Car
+          </Button>
         </div>
       </CardContent>
     </Card>
