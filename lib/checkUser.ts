@@ -65,3 +65,7 @@ export const checkUser = async () => {
     return null;
   }
 };
+
+//  npx prisma init
+// npx prisma migrate dev --name create-models
+// npx  prisma migrate reset

@@ -1,3 +1,4 @@
+import { checkUser } from "@/lib/checkUser";
 import { ArrowLeft, CarFront, Heart, Layout } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,7 +9,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = async ({ isAdminPage = false }) => {
-  const isAdmin = false;
+  const user = await checkUser();
+  const isAdmin = user?.role === "ADMIN";
   return (
     <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b ">
       <nav className="mx-auto px-4 py-4 flex items-center justify-between">
@@ -31,7 +33,7 @@ const Header: React.FC<HeaderProps> = async ({ isAdminPage = false }) => {
             <Link href={"/"}>
               <Button variant={"outline"}>
                 <ArrowLeft size={18} />
-                <span>Back To App</span>  
+                <span>Back To App</span>
               </Button>
             </Link>
           ) : (
