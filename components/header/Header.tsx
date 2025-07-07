@@ -12,11 +12,11 @@ const Header: React.FC<HeaderProps> = async ({ isAdminPage = false }) => {
   const user = await checkUser();
   const isAdmin = user?.role === "ADMIN";
   return (
-    <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b ">
+    <header className="fixed top-0 w-full bg-white  z-50 border-b ">
       <nav className="mx-auto px-4 py-4 flex items-center justify-between">
         <Link href={isAdminPage ? "/admin" : "/"}>
           <Image
-            src={"https://dummyimage.com/200x70/000/fff.png&text=Logo"}
+            src={"/vericars-logo.png"}
             alt="logo"
             width={200}
             height={70}

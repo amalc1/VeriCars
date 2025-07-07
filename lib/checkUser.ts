@@ -5,7 +5,7 @@ type GuestUserData = {
   role: string;
 };
 
-const ensureGuestUser = async (): Promise<GuestUserData> => {
+export const ensureGuestUser = async (): Promise<GuestUserData> => {
   if (typeof window === "undefined") {
     return { guestUserId: "1234", role: "USER" }; // SSR fallback
   }
