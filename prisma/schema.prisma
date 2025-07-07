@@ -17,6 +17,7 @@ datasource db {
 
 model User {
   id            String             @id @default(uuid())
+  guestUserId   String             @unique // guest user id 
   email         String             @unique
   name          String?
   imageUrl      String?
