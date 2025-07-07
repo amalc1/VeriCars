@@ -14,10 +14,10 @@ const AdmiinLayout = async ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-full relative">
       <Header isAdminPage={true} />
-      <div className="flex h-full w-56 flex-col top-25 fixed inset-y-0 z-50">
+      <div className="flex h-full w-56 flex-col top-20 fixed inset-y-0 z-50">
         <SideBar />
       </div>
-      <main className="md:pl-56 pt-[80px] h-full">{children}</main>
+      <main className="md:pl-56 pt-[40px] h-full">{children}</main>
     </div>
   );
 };

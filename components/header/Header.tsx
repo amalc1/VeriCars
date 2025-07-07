@@ -14,7 +14,10 @@ const Header: React.FC<HeaderProps> = async ({ isAdminPage = false }) => {
   return (
     <header className="fixed top-0 w-full bg-white  z-50 border-b ">
       <nav className="mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href={isAdminPage ? "/admin" : "/"}>
+        <Link
+          href={isAdminPage ? "/admin" : "/"}
+          className="flex items-end space-x-1"
+        >
           <Image
             src={"/vericars-logo.png"}
             alt="logo"
@@ -24,7 +27,7 @@ const Header: React.FC<HeaderProps> = async ({ isAdminPage = false }) => {
           />
 
           {isAdminPage && (
-            <span className="text-xs font-extralight">admin</span>
+            <span className="text-xs font-extralight ">admin</span>
           )}
         </Link>
 
