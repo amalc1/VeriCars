@@ -1,4 +1,4 @@
-type Car = {
+export type Car = {
   id: number;
   make: string;
   model: string;
@@ -11,6 +11,10 @@ type Car = {
   mileage: number;
   color: string;
   wishlisted: boolean;
+  seats?: number;
+  description?: string;
+  status?: any;
+  featured?: boolean;  
 };
 
 export type CarCardProps = {

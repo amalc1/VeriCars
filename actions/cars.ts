@@ -1,4 +1,10 @@
+import { db } from "@/lib/prisma";
+import { createClient } from "@/lib/subabase";
+import { Car } from "@/lib/types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { v4 as uuidv4 } from "uuid";
 
 // Fn to convert File to base64
 async function fileToBase64(file: File) {
@@ -100,7 +106,94 @@ export async function processCarImageWithAI(file: File) {
       };
     }
   } catch (error: any) {
-    console.error();
     throw new Error("Gemini API error:" + error.message);
+  }
+}
+
+type AddCarParams = {
+  carData: Car;
+  images: string[];
+};
+
+export async function addCar({
+  carData,
+  images,
+}: AddCarParams): Promise<{ success: boolean }> {
+  try {
+    const user = await db.user.findUnique({
+      where: { guestUserId: "1234" },
+    });
+
+    if (!user) throw new Error("User not found");
+
+    const carId = uuidv4();
+    const folderPath = `cars/${carId}`;
+
+    const cookieStore = await cookies();
+    const supabase = createClient(Promise.resolve(cookieStore));
+    const imgUrls = [];
+    for (let i = 0; i < images.length; i++) {
+      const base64Data = images[i];
+      // skip if img data not valid
+      if (!base64Data || !base64Data.startsWith("data:image/")) {
+        console.warn("Skipping invalid image data");
+        continue;
+      }
+      // extract base64 part (remove the data:image/xyz;base64, prefix)
+      const base64 = base64Data.split(",")[1];
+      const imageBuffer = Buffer.from(base64, "base64");
+      // get file ext from the data url
+      const mimeMatch = base64Data.match(/data:image\/([a-zA-Z0-9]+);/);
+      const fileExt = mimeMatch ? mimeMatch[1] : "jpeg";
+      // create file name
+      const fileName = `image-${Date.now()}-${i}.${fileExt} `;
+      const filePath = `${folderPath}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from("car-images")
+        .upload(filePath, imageBuffer, {
+          contentType: `image/${fileExt}`,
+        });
+
+      if (error) {
+        console.error("Error uploading image:", error);
+        throw new Error(`Failed to upload image: ${error.message}`);
+      }
+
+      const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/car-images/${filePath}`;
+      imgUrls.push(publicUrl);
+    }
+
+    if (imgUrls.length === 0) {
+      throw new Error("No valid images were uploaded.");
+    }
+    // Add car to database
+    const car = await db.car.create({
+      data: {
+        id: carId, // Use same ID  used for  folder
+        make: carData.make,
+        model: carData.model,
+        year: carData.year,
+        price: carData.price,
+        mileage: carData.mileage,
+        color: carData.color,
+        fuelType: carData.fuelType,
+        transmission: carData.transmission,
+        bodyType: carData.bodyType,
+        seats: carData.seats,
+        description: carData.description ?? "",
+        status: carData.status,
+        featured: carData.featured,
+        images: imgUrls, // Store the array of image URLs
+      },
+    });
+    revalidatePath("/admin/cars");
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error adding car:", error);
+    return { success: false };
   }
 }
