@@ -1,4 +1,5 @@
 "use client";
+import { addCar } from "@/actions/cars";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,12 +20,15 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import useFetch from "@/hooks/useFetch";
+import { Car } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 // Predefined options
@@ -42,6 +46,7 @@ const bodyTypes = [
 const carStatuses = ["AVAILABLE", "UNAVAILABLE", "SOLD"];
 
 const AddCarForm = () => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("ai");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedAiImage, setUploadedAiImage] = useState(null);
@@ -98,12 +103,43 @@ const AddCarForm = () => {
     },
   });
 
-  const onsubmit = async (data) => {
+  const {
+    data: addCarResult,
+    error,
+    fn: addCarFn,
+    loading: addCarLoading,
+  } = useFetch(addCar);
+
+  useEffect(() => {
+    if (addCarResult?.success) {
+      toast.success("car added successfully");
+      router.push("/admin/cars");
+    }
+  }, [addCarResult, addCarLoading]);
+
+  const onsubmit: SubmitHandler<
+    Omit<Car, "id" | "images" | "wishlisted">
+  > = async (data) => {
     // Check if images are uploaded
     if (uploadedImages.length === 0) {
       setImageError("Please upload at least one image");
       return;
     }
+
+    // Prepare data for server action
+    const carData = {
+      ...data,
+      year: parseInt(String(data.year)),
+      price: parseFloat(String(data.price)),
+      mileage: parseInt(String(data.mileage)),
+      seats: data.seats ? parseInt(String(data.seats)) : null,
+    };
+
+    // Call the addCar function with our useFetch hook
+    await addCarFn({
+      carData,
+      images: uploadedImages,
+    });
   };
 
   // Remove image from upload preview
@@ -523,7 +559,7 @@ const AddCarForm = () => {
                           <Button
                             type="submit"
                             className="w-full md:w-auto"
-                            disabled={addCarLoading}
+                            disabled={Boolean(addCarLoading)}
                           >
                             {addCarLoading ? (
                               <>

@@ -2,19 +2,19 @@ export type Car = {
   id: number;
   make: string;
   model: string;
-  year: number;
-  price: number;
   images: string[];
   transmission: string;
   fuelType: string;
   bodyType: string;
-  mileage: number;
   color: string;
   wishlisted: boolean;
-  seats?: number;
   description?: string;
-  status?: any;
-  featured?: boolean;  
+  status: "AVAILABLE" | "UNAVAILABLE" | "SOLD";
+  featured?: boolean;
+  year: string;
+  price: string;
+  mileage: string;
+  seats?: string;
 };
 
 export type CarCardProps = {

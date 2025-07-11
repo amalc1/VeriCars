@@ -1,9 +1,9 @@
+"use server";
 import { db } from "@/lib/prisma";
 import { createClient } from "@/lib/subabase";
 import { Car } from "@/lib/types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 
 // Fn to convert File to base64
@@ -123,14 +123,13 @@ export async function addCar({
     const user = await db.user.findUnique({
       where: { guestUserId: "1234" },
     });
-
     if (!user) throw new Error("User not found");
 
     const carId = uuidv4();
     const folderPath = `cars/${carId}`;
 
-    const cookieStore = await cookies();
-    const supabase = createClient(Promise.resolve(cookieStore));
+    // const cookieStore = await cookies();
+    const supabase = createClient();
     const imgUrls = [];
     for (let i = 0; i < images.length; i++) {
       const base64Data = images[i];
@@ -154,7 +153,6 @@ export async function addCar({
         .upload(filePath, imageBuffer, {
           contentType: `image/${fileExt}`,
         });
-
       if (error) {
         console.error("Error uploading image:", error);
         throw new Error(`Failed to upload image: ${error.message}`);
@@ -187,6 +185,7 @@ export async function addCar({
         images: imgUrls, // Store the array of image URLs
       },
     });
+
     revalidatePath("/admin/cars");
 
     return {
