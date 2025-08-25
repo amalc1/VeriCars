@@ -132,7 +132,8 @@ const AddCarForm = () => {
       year: parseInt(String(data.year)),
       price: parseFloat(String(data.price)),
       mileage: parseInt(String(data.mileage)),
-      seats: data.seats ? parseInt(String(data.seats)) : null,
+      seats: data.seats ? parseInt(String(data.seats)) : undefined,
+
     };
 
     // Call the addCar function with our useFetch hook

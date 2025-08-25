@@ -111,7 +111,7 @@ export async function processCarImageWithAI(file: File) {
 }
 
 type AddCarParams = {
-  carData: Car;
+  carData: Omit<Car, "id" | "images" | "wishlisted">;
   images: string[];
 };
 

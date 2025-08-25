@@ -11,10 +11,10 @@ export type Car = {
   description?: string;
   status: "AVAILABLE" | "UNAVAILABLE" | "SOLD";
   featured?: boolean;
-  year: string;
-  price: string;
-  mileage: string;
-  seats?: string;
+  year: number;
+  price: number;
+  mileage: number;
+  seats?: number;
 };
 
 export type CarCardProps = {
