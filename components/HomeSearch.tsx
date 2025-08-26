@@ -131,7 +131,7 @@ const HomeSearch = () => {
                   </Button>
                 </div>
               ) : (
-                <div {...getRootProps()}>
+                <div {...getRootProps()} className="cursor-pointer">
                   <input {...getInputProps()} />
                   <Upload className="h-12 w-12 text-gray-400 mb-2 mx-auto" />
                   <p className="text-gray-400">
@@ -145,7 +145,7 @@ const HomeSearch = () => {
                 <p className="text-red-500 mb-2 ">Invalid image type</p>
               )}
               <p className="text-gray-400 text-sm">
-                Supports: JPG, PNG (max 5MB)
+                Supports: JPG, PNG, WEBP (max 5MB)
               </p>
             </div>
 
