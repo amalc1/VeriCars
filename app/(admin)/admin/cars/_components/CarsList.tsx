@@ -8,10 +8,12 @@ import { useState } from "react";
 const CarsList = () => {
   const router = useRouter();
   const [search, setSearch] = useState("");
+
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+  };
 
-};
+  
 
   return (
     <div className="space-y-4">

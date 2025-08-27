@@ -1,9 +1,11 @@
 "use server";
+import { serializeCarData } from "@/lib/helper";
 import { db } from "@/lib/prisma";
 import { createClient } from "@/lib/subabase";
 import { Car } from "@/lib/types";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 
 // Fn to convert File to base64
@@ -194,5 +196,154 @@ export async function addCar({
   } catch (error) {
     console.error("Error adding car:", error);
     return { success: false };
+  }
+}
+
+export async function getCars(search = "") {
+  try {
+    const user = await db.user.findUnique({
+      where: { guestUserId: "1234" },
+    });
+    if (!user) throw new Error("User not found");
+
+    let where = {};
+    if (search) {
+      where.OR = [
+        { make: { contains: search, mode: "insensitive" } },
+        { model: { contains: search, mode: "insensitive" } },
+        { color: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const cars = await db.car.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+
+    const serializedCars = cars.map((car) => serializeCarData(car));
+
+    return {
+      success: true,
+      data: serializedCars,
+    };
+  } catch (error: any) {
+    console.error("Error fetching cars:", error);
+    return {
+      success: false,
+      data: error?.message || "Failed to fetch cars",
+    };
+  }
+}
+
+// Delete a car by ID
+export async function deleteCar(id: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: { guestUserId: "1234" },
+    });
+    if (!user) throw new Error("User not found");
+
+    // First, fetch the car to get its images
+    const car = await db.car.findUnique({
+      where: { id },
+      select: { images: true },
+    });
+
+    if (!car) {
+      return {
+        success: false,
+        error: "Car not found",
+      };
+    }
+
+    // Delete the car from the database
+    await db.car.delete({
+      where: { id },
+    });
+
+    // Delete the images from Supabase storage
+    try {
+      const cookieStore = cookies();
+      const supabase = createClient(cookieStore);
+
+      // Extract file paths from image URLs
+      const filePaths = car.images
+        .map((imageUrl) => {
+          const url = new URL(imageUrl);
+          const pathMatch = url.pathname.match(/\/car-images\/(.*)/);
+          return pathMatch ? pathMatch[1] : null;
+        })
+        .filter(Boolean);
+
+      // Delete files from storage if paths were extracted
+      if (filePaths.length > 0) {
+        const { error } = await supabase.storage
+          .from("car-images")
+          .remove(filePaths);
+
+        if (error) {
+          console.error("Error deleting images:", error);
+          // We continue even if image deletion fails
+        }
+      }
+    } catch (storageError) {
+      console.error("Error with storage operations:", storageError);
+      // Continue with the function even if storage operations fail
+    }
+
+    // Revalidate the cars list page
+    revalidatePath("/admin/cars");
+
+    return {
+      success: true,
+    };
+  } catch (error: any) {
+    console.error("Error deleting car:", error);
+    return {
+      success: false,
+      error: error?.message,
+    };
+  }
+}
+
+// Update car status or featured status
+export async function updateCarStatus(
+  id: string,
+  { status, featured }: { status?: string; featured?: boolean }
+) {
+  try {
+    const user = await db.user.findUnique({
+      where: { guestUserId: "1234" },
+    });
+    if (!user) throw new Error("User not found");
+
+    const updateData = {};
+
+    if (status !== undefined) {
+      updateData.status = status;
+    }
+
+    if (featured !== undefined) {
+      updateData.featured = featured;
+    }
+
+    // Update the car
+    await db.car.update({
+      where: { id },
+      data: updateData,
+    });
+
+    // Revalidate the cars list page
+    revalidatePath("/admin/cars");
+
+    return {
+      success: true,
+    };
+  } catch (error: any) {
+    console.error("Error updating car status:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
   }
 }
