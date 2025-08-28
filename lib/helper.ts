@@ -10,3 +10,10 @@ export const serializeCarData = (car: Car, wishlisted: boolean = false) => {
     wishlisted: wishlisted,
   };
 };
+
+export const formatCurrency = (amount: number): string => { 
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
