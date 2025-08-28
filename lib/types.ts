@@ -1,5 +1,7 @@
+import { Decimal } from "./generated/prisma/runtime/library";
+
 export type Car = {
-  id: number;
+  id: string;
   make: string;
   model: string;
   images: string[];
@@ -7,14 +9,16 @@ export type Car = {
   fuelType: string;
   bodyType: string;
   color: string;
-  wishlisted: boolean;
+  wishlisted?: boolean;
   description?: string;
   status: "AVAILABLE" | "UNAVAILABLE" | "SOLD";
   featured?: boolean;
   year: number;
-  price: number;
+  price: Decimal;
   mileage: number;
-  seats?: number;
+  seats?: number | null;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type CarCardProps = {
