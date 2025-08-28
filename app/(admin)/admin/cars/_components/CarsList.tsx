@@ -107,6 +107,21 @@ const CarsList = () => {
     }
   }, [deleteResult, updateResult, search]);
 
+  // Handle errors
+  useEffect(() => {
+    if (carsError) {
+      toast.error("Failed to load cars");
+    }
+
+    if (deleteError) {
+      toast.error("Failed to delete car");
+    }
+
+    if (updateError) {
+      toast.error("Failed to update car");
+    }
+  }, [carsError, deleteError, updateError]);
+
   // Handle toggle featured status
   const handleToggleFeatured = async (car: Car) => {
     await updateCarStatusFn(car.id, { featured: !car.featured });
@@ -336,7 +351,7 @@ const CarsList = () => {
             <Button
               variant="destructive"
               onClick={handleDeleteCar}
-             disabled={Boolean(deletingCar)}
+              disabled={Boolean(deletingCar)}
             >
               {deletingCar ? (
                 <>
