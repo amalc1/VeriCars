@@ -127,6 +127,14 @@ const CarsList = () => {
     await updateCarStatusFn(car.id, { featured: !car.featured });
   };
 
+  // Handle status change
+  const handleStatusUpdate = async (
+    car: Car,
+    newStatus: "AVAILABLE" | "UNAVAILABLE" | "SOLD"
+  ) => {
+    await updateCarStatusFn(car.id, { status: newStatus });
+  };
+
   // Get status badge color
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -269,9 +277,9 @@ const CarsList = () => {
                               onClick={() =>
                                 handleStatusUpdate(car, "AVAILABLE")
                               }
-                              disabled={
+                              disabled={Boolean(
                                 car.status === "AVAILABLE" || updatingCar
-                              }
+                              )}
                             >
                               Set Available
                             </DropdownMenuItem>
@@ -279,15 +287,17 @@ const CarsList = () => {
                               onClick={() =>
                                 handleStatusUpdate(car, "UNAVAILABLE")
                               }
-                              disabled={
+                              disabled={Boolean(
                                 car.status === "UNAVAILABLE" || updatingCar
-                              }
+                              )}
                             >
                               Set Unavailable
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleStatusUpdate(car, "SOLD")}
-                              disabled={car.status === "SOLD" || updatingCar}
+                              disabled={Boolean(
+                                car.status === "SOLD" || updatingCar
+                              )}
                             >
                               Mark as Sold
                             </DropdownMenuItem>
