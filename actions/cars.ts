@@ -1,5 +1,5 @@
 "use server";
-import { serializeCarData } from "@/lib/helper";
+import { fileToBase64, serializeCarData } from "@/lib/helper";
 import { db } from "@/lib/prisma";
 import { createClient } from "@/lib/subabase";
 import { Car } from "@/lib/types";
@@ -8,12 +8,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
 
-// Fn to convert File to base64
-async function fileToBase64(file: File) {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
-  return buffer.toString("base64");
-}
+
 
 export async function processCarImageWithAI(file: File) {
   try {

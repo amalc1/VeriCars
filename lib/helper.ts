@@ -11,9 +11,16 @@ export const serializeCarData = (car: Car, wishlisted: boolean = false) => {
   };
 };
 
-export const formatCurrency = (amount: number): string => { 
+export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(amount);
 };
+
+// Fn to convert File to base64
+export async function fileToBase64(file: File) {
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+  return buffer.toString("base64");
+}
