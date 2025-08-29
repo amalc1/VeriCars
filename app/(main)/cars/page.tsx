@@ -1,6 +1,6 @@
 import { getCarFilters } from "@/actions/car-listing";
 import { CarFilters } from "./_components/CarFilters";
-import CarListings from "./_components/CarListings";
+import { CarListings } from "./_components/CarListings";
 
 export const metadata = {
   title: "Cars | Vericars",
