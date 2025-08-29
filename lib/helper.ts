@@ -5,8 +5,12 @@ export const serializeCarData = (car: Car, wishlisted: boolean = false) => {
   return {
     ...car,
     price: car.price ? parseFloat(car.price.toString()) : 0,
-    createdAt: car.createdAt?.toISOString(),
-    updatedAt: car.updatedAt?.toISOString(),
+    createdAt: car.createdAt
+      ? new Date(car.createdAt).toISOString()
+      : undefined,
+    updatedAt: car.updatedAt
+      ? new Date(car.updatedAt).toISOString()
+      : undefined,
     wishlisted: wishlisted,
   };
 };

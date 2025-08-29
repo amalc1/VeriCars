@@ -33,6 +33,23 @@ const HomeSearch = () => {
     }
   }, [processError]);
 
+  // Handle process result and errors
+  useEffect(() => {
+    if (processResult?.success) {
+      const params = new URLSearchParams();
+
+      // Add extracted params to the search
+      if (processResult.data.make) params.set("make", processResult.data.make);
+      if (processResult.data.bodyType)
+        params.set("bodyType", processResult.data.bodyType);
+      if (processResult.data.color)
+        params.set("color", processResult.data.color);
+
+      // Redirect to search results
+      router.push(`/cars?${params.toString()}`);
+    }
+  }, [processResult, router]);
+
   const onDrop = (
     acceptedFiles: File[],
     fileRejections: FileRejection[],
@@ -172,10 +189,14 @@ const HomeSearch = () => {
             {imagePreview && (
               <Button
                 type="submit"
-                className="w-full mt-2 cursor-pointer"
-                disabled={isUploading}
+                className="w-full"
+                disabled={Boolean(isUploading || isProcessing)}
               >
-                {isUploading ? "Uploading..." : "Search with this Image"}
+                {isUploading
+                  ? "Uploading..."
+                  : isProcessing
+                  ? "Analyzing image..."
+                  : "Search with this Image"}
               </Button>
             )}
           </form>
