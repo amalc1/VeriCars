@@ -24,3 +24,23 @@ export type Car = {
 export type CarCardProps = {
   car: Car;
 };
+
+// Types
+export interface Filters {
+  makes: string[];
+  bodyTypes: string[];
+  fuelTypes: string[];
+  transmissions: string[];
+  priceRange: {
+    min: number;
+    max: number;
+  };
+}
+
+export interface CurrentFilters {
+  make: string;
+  bodyType: string;
+  fuelType: string;
+  transmission: string;
+  priceRange: [number, number]; // Slider array of numbers
+}
