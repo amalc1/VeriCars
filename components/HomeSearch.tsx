@@ -1,4 +1,6 @@
 "use client";
+import { processImageSearch } from "@/actions/home";
+import useFetch from "@/hooks/useFetch";
 import { Camera, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -14,6 +16,14 @@ const HomeSearch = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [searchImage, setSearchImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Use the useFetch hook for image processing
+  const {
+    loading: isProcessing,
+    fn: processImageFn,
+    data: processResult,
+    error: processError,
+  } = useFetch(processImageSearch);
 
   const onDrop = (
     acceptedFiles: File[],
