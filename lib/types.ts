@@ -17,8 +17,8 @@ export type Car = {
   price: number | Decimal;
   mileage: number;
   seats?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 };
 
 export type CarCardProps = {
