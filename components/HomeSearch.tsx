@@ -3,7 +3,7 @@ import { processImageSearch } from "@/actions/home";
 import useFetch from "@/hooks/useFetch";
 import { Camera, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DropEvent, FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -24,6 +24,14 @@ const HomeSearch = () => {
     data: processResult,
     error: processError,
   } = useFetch(processImageSearch);
+
+  useEffect(() => {
+    if (processError) {
+      toast.error(
+        "Failed to analyze image: " + (processError.message || "Unknown error")
+      );
+    }
+  }, [processError]);
 
   const onDrop = (
     acceptedFiles: File[],
@@ -74,13 +82,15 @@ const HomeSearch = () => {
     }
     router.push(`/cars?search=${encodeURIComponent(searchTerm)}`);
   };
+
   const handleImageSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!searchImage) {
       toast.error("Please upload an image first");
       return;
     }
-    // ai logic
+    // Use the processImageFn from useFetch hook
+    await processImageFn(searchImage);
   };
 
   return (
