@@ -1,7 +1,9 @@
 "use client";
+import { processImageSearch } from "@/actions/home";
+import useFetch from "@/hooks/useFetch";
 import { Camera, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DropEvent, FileRejection, useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -14,6 +16,39 @@ const HomeSearch = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [searchImage, setSearchImage] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Use the useFetch hook for image processing
+  const {
+    loading: isProcessing,
+    fn: processImageFn,
+    data: processResult,
+    error: processError,
+  } = useFetch(processImageSearch);
+
+  useEffect(() => {
+    if (processError) {
+      toast.error(
+        "Failed to analyze image: " + (processError.message || "Unknown error")
+      );
+    }
+  }, [processError]);
+
+  // Handle process result and errors
+  useEffect(() => {
+    if (processResult?.success) {
+      const params = new URLSearchParams();
+
+      // Add extracted params to the search
+      if (processResult.data.make) params.set("make", processResult.data.make);
+      if (processResult.data.bodyType)
+        params.set("bodyType", processResult.data.bodyType);
+      if (processResult.data.color)
+        params.set("color", processResult.data.color);
+
+      // Redirect to search results
+      router.push(`/cars?${params.toString()}`);
+    }
+  }, [processResult, router]);
 
   const onDrop = (
     acceptedFiles: File[],
@@ -64,13 +99,15 @@ const HomeSearch = () => {
     }
     router.push(`/cars?search=${encodeURIComponent(searchTerm)}`);
   };
+
   const handleImageSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!searchImage) {
       toast.error("Please upload an image first");
       return;
     }
-    // ai logic
+    // Use the processImageFn from useFetch hook
+    await processImageFn(searchImage);
   };
 
   return (
@@ -152,10 +189,14 @@ const HomeSearch = () => {
             {imagePreview && (
               <Button
                 type="submit"
-                className="w-full mt-2 cursor-pointer"
-                disabled={isUploading}
+                className="w-full"
+                disabled={Boolean(isUploading || isProcessing)}
               >
-                {isUploading ? "Uploading..." : "Search with this Image"}
+                {isUploading
+                  ? "Uploading..."
+                  : isProcessing
+                  ? "Analyzing image..."
+                  : "Search with this Image"}
               </Button>
             )}
           </form>
