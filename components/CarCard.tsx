@@ -1,19 +1,55 @@
 "use client";
+import { toggleSavedCar } from "@/actions/car-listing";
+import useFetch from "@/hooks/useFetch";
 import { CarCardProps } from "@/lib/types";
-import { CarIcon, Heart } from "lucide-react";
+import { CarIcon, Heart, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
 const CarCard: React.FC<CarCardProps> = ({ car }) => {
   const [isSaved, setIsSaved] = useState(car.wishlisted);
+
+  // Handle toggle saved car
   const handleToggleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsSaved((prev) => !prev);
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isToggling) return;
+
+    // Call the toggleSavedCar function using our useFetch hook
+    await toggleSavedCarFn(car.id);
   };
+
+  // Use the useFetch hook
+  const {
+    loading: isToggling,
+    fn: toggleSavedCarFn,
+    data: toggleResult,
+    error: toggleError,
+  } = useFetch(toggleSavedCar);
+
+  // Handle toggle result with useEffect
+  useEffect(() => {
+    if (toggleResult?.success && toggleResult.saved !== isSaved) {
+      setIsSaved(toggleResult.saved);
+      toast.success(toggleResult.message);
+    }
+  }, [toggleResult, isSaved]);
+
+  // Handle errors with useEffect
+  useEffect(() => {
+    if (toggleError) {
+      toast.error("Failed to update favorites");
+    }
+  }, [toggleError]);
+
   const router = useRouter();
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition group py-0">
       <div className="relative h-48">
@@ -33,18 +69,21 @@ const CarCard: React.FC<CarCardProps> = ({ car }) => {
         )}
 
         <Button
-          variant={"ghost"}
-          size={"icon"}
-          className={`absolute top-2 right-2 bg-white/90 rounded-full p-1.5
-            ${
-              isSaved
-                ? "text-red-500 hover:bg-red-600"
-                : "text-gray-600 hover:bg-gray-100"
-            }
-            `}
+          variant="ghost"
+          size="icon"
+          className={`absolute top-2 right-2 bg-white/90 rounded-full p-1.5 ${
+            isSaved
+              ? "text-red-500 hover:text-red-600"
+              : "text-gray-600 hover:text-gray-900"
+          }`}
           onClick={handleToggleSave}
+          disabled={Boolean(isToggling)}
         >
-          <Heart className={isSaved ? "fill-current" : ""} size={20} />
+          {isToggling ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Heart className={isSaved ? "fill-current" : ""} size={20} />
+          )}
         </Button>
       </div>
 
