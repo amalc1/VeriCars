@@ -250,3 +250,39 @@ export async function toggleSavedCar(carId: string) {
     throw new Error("Error toggling saved car:" + error.message);
   }
 }
+
+/**
+ * Get user's saved cars
+ */
+export async function getSavedCars() {
+  try {
+    let user = null;
+    user = await db.user.findUnique({
+      where: { guestUserId: "1234" },
+    });
+    if (!user) throw new Error("User not found");
+
+    // Get saved cars with their details
+    const savedCars = await db.userSavedCar.findMany({
+      where: { userId: user.id },
+      include: {
+        car: true,
+      },
+      orderBy: { savedAt: "desc" },
+    });
+
+    // Extract and format car data
+    const cars = savedCars.map((saved) => serializeCarData(saved.car));
+
+    return {
+      success: true,
+      data: cars,
+    };
+  } catch (error: any) {
+    console.error("Error fetching saved cars:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
+}
