@@ -286,3 +286,95 @@ export async function getSavedCars() {
     };
   }
 }
+
+/**
+ * Get car details by ID
+ */
+export async function getCarById(carId: string) {
+  try {
+    let user = null;
+    user = await db.user.findUnique({
+      where: { guestUserId: "1234" },
+    });
+    if (!user) throw new Error("User not found");
+    // Get car details
+    const car = await db.car.findUnique({
+      where: { id: carId },
+    });
+
+    if (!car) {
+      return {
+        success: false,
+        error: "Car not found",
+      };
+    }
+
+    // Check if car is wishlisted by user
+    let isWishlisted = false;
+    if (user) {
+      const savedCar = await db.userSavedCar.findUnique({
+        where: {
+          userId_carId: {
+            userId: user.id,
+            carId,
+          },
+        },
+      });
+
+      isWishlisted = !!savedCar;
+    }
+
+    // Check if user has already booked a test drive for this car
+    const existingTestDrive = await db.testDriveBooking.findFirst({
+      where: {
+        carId,
+        userId: user.id,
+        status: { in: ["PENDING", "CONFIRMED", "COMPLETED"] },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    let userTestDrive = null;
+
+    if (existingTestDrive) {
+      userTestDrive = {
+        id: existingTestDrive.id,
+        status: existingTestDrive.status,
+        bookingDate: existingTestDrive.bookingDate.toISOString(),
+      };
+    }
+
+    // Get dealership info for test drive availability
+    const dealership = await db.dealershipInfo.findFirst({
+      include: {
+        workingHours: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        ...serializeCarData(car, isWishlisted),
+        testDriveInfo: {
+          userTestDrive,
+          dealership: dealership
+            ? {
+                ...dealership,
+                createdAt: dealership.createdAt.toISOString(),
+                updatedAt: dealership.updatedAt.toISOString(),
+                workingHours: dealership.workingHours.map((hour) => ({
+                  ...hour,
+                  createdAt: hour.createdAt.toISOString(),
+                  updatedAt: hour.updatedAt.toISOString(),
+                })),
+              }
+            : null,
+        },
+      },
+    };
+  } catch (error: any) {
+    throw new Error("Error fetching car details:" + error.message);
+  }
+}
