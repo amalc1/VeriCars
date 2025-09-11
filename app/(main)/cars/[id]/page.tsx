@@ -2,14 +2,8 @@ import { getCarById } from "@/actions/car-listing";
 import { notFound } from "next/navigation";
 import CarDetails from "./_components/CarDetails";
 
-interface CarPageProps {
-  params: {
-    id: string;
-  };
-}
-
-export async function generateMetadata({ params }: CarPageProps) {
-  const { id } = await params;
+export async function generateMetadata({ params }) {
+  const { id } = params;
   const result = await getCarById(id);
 
   if (!result.success) {
